@@ -1,0 +1,5 @@
+to_do_fe/node_modules
+to_do_fe/build
+to_do_fe/.env
+backend/node_modules
+backend/.env
