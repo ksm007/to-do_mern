@@ -1,18 +1,21 @@
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu, Button, Drawer } from "antd";
 import {
   HomeOutlined,
   UnorderedListOutlined,
   UserOutlined,
   LogoutOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
 
 const { Header } = Layout;
 
 const Navbar = () => {
   const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const getSelectedKey = () => {
     const path = location.pathname;
@@ -21,50 +24,119 @@ const Navbar = () => {
     return "0";
   };
 
-  return (
-    <Header>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <h2 style={{ color: "white", margin: 0, marginRight: 30 }}>
-            Task Manager
-          </h2>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[getSelectedKey()]}
-            style={{ flex: 1, minWidth: 200 }}
-          >
-            <Menu.Item key="1" icon={<HomeOutlined />}>
-              <Link to="/">Home</Link>
-            </Menu.Item>
-            {isAuthenticated && (
-              <Menu.Item key="2" icon={<UnorderedListOutlined />}>
-                <Link to="/tasks">Tasks</Link>
-              </Menu.Item>
-            )}
-          </Menu>
-        </div>
+  const menuItems = [
+    {
+      key: "1",
+      icon: <HomeOutlined />,
+      label: <Link to="/">Home</Link>,
+    },
+    ...(isAuthenticated
+      ? [
+          {
+            key: "2",
+            icon: <UnorderedListOutlined />,
+            label: <Link to="/tasks">Tasks</Link>,
+          },
+        ]
+      : []),
+  ];
 
-        <div>
-          {isAuthenticated ? (
-            <Button
-              type="text"
-              icon={<LogoutOutlined />}
-              onClick={logout}
-              style={{ color: "white" }}
-            >
-              Logout
-            </Button>
-          ) : (
-            <Link to="/login">
-              <Button type="primary" icon={<UserOutlined />}>
-                Login
+  return (
+    <>
+      <Header style={{ paddingInline: 20 }}>
+        <div
+          className="navbar"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className="navbar-left"
+            style={{ display: "flex", alignItems: "center", gap: 20 }}
+          >
+            <h2 style={{ color: "white", margin: 0 }}>Task Manager</h2>
+
+            {/* Desktop Menu */}
+            <div className="desktop-menu" style={{ display: "none" }}>
+              <Menu
+                theme="dark"
+                mode="horizontal"
+                selectedKeys={[getSelectedKey()]}
+                items={menuItems}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <Button
+            className="menu-button"
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={() => setMobileOpen(true)}
+            style={{ color: "white", display: "none" }}
+          />
+
+          <div className="auth-action">
+            {isAuthenticated ? (
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                onClick={logout}
+                style={{ color: "white" }}
+              >
+                Logout
               </Button>
-            </Link>
-          )}
+            ) : (
+              <Link to="/login">
+                <Button type="primary" icon={<UserOutlined />}>
+                  Login
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
-    </Header>
+      </Header>
+
+      {/* Mobile Drawer Menu */}
+      <Drawer
+        title="Task Manager"
+        placement="left"
+        onClose={() => setMobileOpen(false)}
+        open={mobileOpen}
+      >
+        <Menu
+          mode="vertical"
+          selectedKeys={[getSelectedKey()]}
+          items={menuItems}
+          onClick={() => setMobileOpen(false)}
+        />
+      </Drawer>
+
+      {/* Responsive CSS */}
+      <style>
+        {`
+          @media (min-width: 768px) {
+            .desktop-menu {
+              display: block !important;
+            }
+            .menu-button {
+              display: none !important;
+            }
+          }
+
+          @media (max-width: 767px) {
+            .menu-button {
+              display: inline-block !important;
+            }
+            .desktop-menu {
+              display: none !important;
+            }
+          }
+        `}
+      </style>
+    </>
   );
 };
 
